@@ -115,18 +115,19 @@ buildLibjpegForIPhoneOS()
     export CXX=$XCODE_ROOT/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++
     export CXX_BASENAME=clang++
 
-    # 因为我的项目不支持模拟器，所以我把模拟器相关的代码注释掉了，需要的可以打开
+    #编译模拟器版本
+    echo Building Libjpeg for iPhoneSimulator
+    mkdir -p $LIB_SRC/iphonesim-build
+    cd $LIB_SRC/iphonesim-build
+    # 在我的电脑编译的时候报错，我把 iPhoneSimulator${IPHONE_SDKVERSION}.sdk 替换成了 iPhoneSimulator.sdk
+    export CFLAGS="-O3 -arch i386 -arch x86_64 -isysroot $XCODE_ROOT/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk 
+    -mios-simulator-version-min=${IPHONE_SDKVERSION}"
+    ../configure --prefix=$PREFIXDIR/iphonesim-build --disable-dependency-tracking --enable-static=yes --enable-shared=no --host=i686-pc-none
+    make
+    make install
+    doneSection
 
-    # echo Building Libjpeg for iPhoneSimulator
-    # mkdir -p $LIB_SRC/iphonesim-build
-    # cd $LIB_SRC/iphonesim-build
-    # export CFLAGS="-O3 -arch i386 -arch x86_64 -isysroot $XCODE_ROOT/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator${IPHONE_SDKVERSION}.sdk 
-    # -mios-simulator-version-min=${IPHONE_SDKVERSION} -Wno-error-implicit-function-declaration"
-    # ../configure --prefix=$PREFIXDIR/iphonesim-build --disable-dependency-tracking --enable-static=yes --enable-shared=no --host=i686-pc-none
-    # make
-    # make install
-    # doneSection
-
+    #编译真机版本
     echo Building Libjpeg for iPhone
     mkdir -p $LIB_SRC/iphone-build
     cd $LIB_SRC/iphone-build
@@ -149,10 +150,9 @@ scrunchAllLibsTogetherInOneLibPerPlatform()
     mkdir -p $IOSBUILDDIR/armv7s
     mkdir -p $IOSBUILDDIR/arm64
 
-	# 因为我的项目不支持模拟器，所以我把模拟器相关的代码注释掉了，需要的可以打开
     # iOS Simulator
-    # mkdir -p $IOSBUILDDIR/i386
-    # mkdir -p $IOSBUILDDIR/x86_64
+    mkdir -p $IOSBUILDDIR/i386
+    mkdir -p $IOSBUILDDIR/x86_64
 
     echo Splitting all existing fat binaries...
 
@@ -160,9 +160,9 @@ scrunchAllLibsTogetherInOneLibPerPlatform()
     $ARM_DEV_CMD lipo "iphone-build/lib/libjpeg.a" -thin armv7s -o $IOSBUILDDIR/armv7s/libjpeg.a
     $ARM_DEV_CMD lipo "iphone-build/lib/libjpeg.a" -thin arm64 -o $IOSBUILDDIR/arm64/libjpeg.a
 
-	# 因为我的项目不支持模拟器，所以我把模拟器相关的代码注释掉了，需要的可以打开
-    # $SIM_DEV_CMD lipo "iphonesim-build/lib/libjpeg.a" -thin i386 -o $IOSBUILDDIR/i386/libjpeg.a
-    # $SIM_DEV_CMD lipo "iphonesim-build/lib/libjpeg.a" -thin x86_64 -o $IOSBUILDDIR/x86_64/libjpeg.a
+    # 因为我的项目不支持模拟器，所以我把模拟器相关的代码注释掉了，需要的可以打开
+    $SIM_DEV_CMD lipo "iphonesim-build/lib/libjpeg.a" -thin i386 -o $IOSBUILDDIR/i386/libjpeg.a
+    $SIM_DEV_CMD lipo "iphonesim-build/lib/libjpeg.a" -thin x86_64 -o $IOSBUILDDIR/x86_64/libjpeg.a
 }
 
 #===============================================================================
